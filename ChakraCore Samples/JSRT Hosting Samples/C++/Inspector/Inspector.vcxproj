@@ -19,33 +19,33 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{F38CB296-6433-48FB-AFA0-6C1F1423831A}</ProjectGuid>
+    <ProjectGuid>{FD05B2EF-A3A9-4442-9793-2AF906F6D3AE}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
-    <RootNamespace>ChakraCoreHost</RootNamespace>
+    <RootNamespace>Inspector</RootNamespace>
     <WindowsTargetPlatformVersion>10.0.15063.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
-    <ConfigurationType>Application</ConfigurationType>
+    <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v141</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
-    <ConfigurationType>Application</ConfigurationType>
+    <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <PlatformToolset>v141</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
-    <ConfigurationType>Application</ConfigurationType>
+    <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v141</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
-    <ConfigurationType>Application</ConfigurationType>
+    <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <PlatformToolset>v141</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
@@ -69,31 +69,18 @@
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <LinkIncremental>true</LinkIncremental>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <LinkIncremental>true</LinkIncremental>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <LinkIncremental>false</LinkIncremental>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <LinkIncremental>false</LinkIncremental>
-  </PropertyGroup>
+  <PropertyGroup />
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
-      <PrecompiledHeader>
-      </PrecompiledHeader>
+      <PrecompiledHeader>Use</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>c:\dev\git\node-chakracore\deps\chakrashim;c:\dev\git\node-chakracore\deps\chakrashim\include;c:\dev\git\node-chakracore\deps\chakrashim\src;..\Inspector;c:\dev\git\node-chakracore\deps\uv\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <SDLCheck>true</SDLCheck>
+      <AdditionalIncludeDirectories>E:\GitHub\node-chakracore2\deps\icu-small\source\common;E:\GitHub\node-chakracore2\deps\openssl\openssl\include;E:\GitHub\node-chakracore2\Debug\obj\global_intermediate;E:\GitHub\node-chakracore2\deps\chakrashim;E:\GitHub\node-chakracore2\deps\chakrashim\include;E:\GitHub\node-chakracore2\deps\zlib;E:\GitHub\node-chakracore2\deps\http_parser;E:\GitHub\node-chakracore2\deps\uv\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
-      <SubSystem>Console</SubSystem>
-      <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>ChakraCore.lib; ChakraCore.lib; kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <SubSystem>Windows</SubSystem>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -102,73 +89,77 @@
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>_DEBUG;_CONSOLE;HAVE_INSPECTOR;NODE_WANT_INTERNALS;BUILDING_CHAKRASHIM;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>c:\dev\git\node-chakracore\deps\chakrashim;c:\dev\git\node-chakracore\deps\chakrashim\include;c:\dev\git\node-chakracore\deps\chakrashim\src;..\Inspector;c:\dev\git\node-chakracore\deps\uv\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>_DEBUG;_LIB;NODE_WANT_INTERNALS;HAVE_INSPECTOR;U_STATIC_IMPLEMENTATION;BUILDING_CHAKRASHIM;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <SDLCheck>true</SDLCheck>
+      <AdditionalIncludeDirectories>c:\dev\git\node-chakracore\deps\icu-small\source\common;c:\dev\git\node-chakracore\deps\openssl\openssl\include;c:\dev\git\node-chakracore\Debug\obj\global_intermediate;c:\dev\git\node-chakracore\deps\chakrashim;c:\dev\git\node-chakracore\deps\chakrashim\include;c:\dev\git\node-chakracore\deps\zlib;c:\dev\git\node-chakracore\deps\http_parser;c:\dev\git\node-chakracore\deps\uv\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
     </ClCompile>
     <Link>
-      <SubSystem>Console</SubSystem>
-      <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>ChakraCore.lib;chakrashim.lib;Inspector.lib;libuv.lib;zlib.lib;icutools.lib;icuucx.lib;openssl.lib;http_parser.lib;Ws2_32.lib;Iphlpapi.lib;Userenv.lib;Psapi.lib;Mincore.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>..\x64\Debug;c:\dev\git\node-chakracore\Debug;c:\dev\git\node-chakracore\Debug\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <SubSystem>Windows</SubSystem>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
-      <PrecompiledHeader>
-      </PrecompiledHeader>
+      <PrecompiledHeader>Use</PrecompiledHeader>
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>c:\dev\git\node-chakracore\deps\chakrashim;c:\dev\git\node-chakracore\deps\chakrashim\include;c:\dev\git\node-chakracore\deps\chakrashim\src;..\Inspector;c:\dev\git\node-chakracore\deps\uv\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <SDLCheck>true</SDLCheck>
+      <AdditionalIncludeDirectories>E:\GitHub\node-chakracore2\deps\icu-small\source\common;E:\GitHub\node-chakracore2\deps\openssl\openssl\include;E:\GitHub\node-chakracore2\Release\obj\global_intermediate;E:\GitHub\node-chakracore2\deps\chakrashim;E:\GitHub\node-chakracore2\deps\chakrashim\include;E:\GitHub\node-chakracore2\deps\zlib;E:\GitHub\node-chakracore2\deps\http_parser;E:\GitHub\node-chakracore2\deps\uv\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
-      <SubSystem>Console</SubSystem>
-      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <SubSystem>Windows</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>ChakraCore.lib; ChakraCore.lib; kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
-      <PrecompiledHeader>
-      </PrecompiledHeader>
+      <PrecompiledHeader>Use</PrecompiledHeader>
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>c:\dev\git\node-chakracore\deps\chakrashim;c:\dev\git\node-chakracore\deps\chakrashim\include;c:\dev\git\node-chakracore\deps\chakrashim\src;..\Inspector;c:\dev\git\node-chakracore\deps\uv\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <SDLCheck>true</SDLCheck>
+      <AdditionalIncludeDirectories>E:\GitHub\node-chakracore2\deps\icu-small\source\common;E:\GitHub\node-chakracore2\deps\openssl\openssl\include;E:\GitHub\node-chakracore2\Release\obj\global_intermediate;E:\GitHub\node-chakracore2\deps\chakrashim;E:\GitHub\node-chakracore2\deps\chakrashim\include;E:\GitHub\node-chakracore2\deps\zlib;E:\GitHub\node-chakracore2\deps\http_parser;E:\GitHub\node-chakracore2\deps\uv\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
-      <SubSystem>Console</SubSystem>
-      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <SubSystem>Windows</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>ChakraCore.lib; kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>..\x64\Debug;c:\dev\git\node-chakracore\Debug;c:\dev\git\node-chakracore\Debug\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="stdafx.h" />
+    <ClInclude Include="base64.h" />
+    <ClInclude Include="env-inl.h" />
+    <ClInclude Include="env.h" />
+    <ClInclude Include="inspector_agent.h" />
+    <ClInclude Include="inspector_io.h" />
+    <ClInclude Include="inspector_socket.h" />
+    <ClInclude Include="inspector_socket_server.h" />
+    <ClInclude Include="JsrtInspector.h" />
+    <ClInclude Include="node.h" />
+    <ClInclude Include="node_crypto.h" />
+    <ClInclude Include="node_debug_options.h" />
+    <ClInclude Include="node_internals.h" />
+    <ClInclude Include="node_mutex.h" />
+    <ClInclude Include="node_version.h" />
+    <ClInclude Include="util-inl.h" />
+    <ClInclude Include="util.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="ChakraCoreHost.cpp" />
-    <ClCompile Include="stdafx.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\Inspector\Inspector.vcxproj">
-      <Project>{fd05b2ef-a3a9-4442-9793-2af906f6d3ae}</Project>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="foo.js">
-      <DeploymentContent>false</DeploymentContent>
-      <FileType>Text</FileType>
-    </None>
+    <ClCompile Include="env.cc" />
+    <ClCompile Include="inspector_agent.cc" />
+    <ClCompile Include="inspector_io.cc" />
+    <ClCompile Include="inspector_socket.cc" />
+    <ClCompile Include="inspector_socket_server.cc" />
+    <ClCompile Include="node.cc" />
+    <ClCompile Include="node_crypto.cc" />
+    <ClCompile Include="node_debug_options.cc" />
+    <ClCompile Include="util.cc" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

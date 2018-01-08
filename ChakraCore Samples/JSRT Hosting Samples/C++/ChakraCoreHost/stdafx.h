@@ -1,8 +1,14 @@
 #pragma once
 
 #include <sdkddkver.h>
+#include <uv.h>
 #include <windows.h>
+#include <stdint.h>
 #include "ChakraCore.h"
+
+#include <v8.h>
+#include <v8-debug.h>
+#include <libplatform/libplatform.h>
 
 #define IfFailError(v, e) \
     { \

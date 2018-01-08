@@ -1,6 +1,11 @@
 #include "stdafx.h"
 #include <string>
 #include <iostream>
+#include <env.h>
+#include <env-inl.h>
+#include <inspector_agent.h>
+#include <v8.h>
+#include <jsrtutils.h>
 
 using namespace std;
 
@@ -11,12 +16,12 @@ using namespace std;
 class CommandLineArguments
 {
 public:
-	int argumentsStart;
+  int argumentsStart;
 
-	CommandLineArguments() :
-		argumentsStart(1)
-	{
-	}
+  CommandLineArguments() :
+    argumentsStart(1)
+  {
+  }
 };
 
 //
@@ -32,12 +37,12 @@ unsigned currentSourceContext = 0;
 
 void ThrowException(wstring errorString)
 {
-	// We ignore error since we're already in an error state.
-	JsValueRef errorValue;
-	JsValueRef errorObject;
-	JsPointerToString(errorString.c_str(), errorString.length(), &errorValue);
-	JsCreateError(errorValue, &errorObject);
-	JsSetException(errorObject);
+  // We ignore error since we're already in an error state.
+  JsValueRef errorValue;
+  JsValueRef errorObject;
+  JsPointerToString(errorString.c_str(), errorString.length(), &errorValue);
+  JsCreateError(errorValue, &errorObject);
+  JsSetException(errorObject);
 }
 
 //
@@ -46,48 +51,48 @@ void ThrowException(wstring errorString)
 
 wstring LoadScript(wstring fileName)
 {
-	FILE *file;
-	if (_wfopen_s(&file, fileName.c_str(), L"rb"))
-	{
-		fwprintf(stderr, L"chakrahost: unable to open file: %s.\n", fileName.c_str());
-		return wstring();
-	}
+  FILE *file;
+  if (_wfopen_s(&file, fileName.c_str(), L"rb"))
+  {
+    fwprintf(stderr, L"chakrahost: unable to open file: %s.\n", fileName.c_str());
+    return wstring();
+  }
 
-	unsigned int current = ftell(file);
-	fseek(file, 0, SEEK_END);
-	unsigned int end = ftell(file);
-	fseek(file, current, SEEK_SET);
-	unsigned int lengthBytes = end - current;
-	char *rawBytes = (char *) calloc(lengthBytes + 1, sizeof(char) );
+  unsigned int current = ftell(file);
+  fseek(file, 0, SEEK_END);
+  unsigned int end = ftell(file);
+  fseek(file, current, SEEK_SET);
+  unsigned int lengthBytes = end - current;
+  char *rawBytes = (char *)calloc(lengthBytes + 1, sizeof(char));
 
-	if (rawBytes == nullptr)
-	{
-		fwprintf(stderr, L"chakrahost: fatal error.\n");
-		return wstring();
-	}
+  if (rawBytes == nullptr)
+  {
+    fwprintf(stderr, L"chakrahost: fatal error.\n");
+    return wstring();
+  }
 
-	fread((void *) rawBytes, sizeof(char) , lengthBytes, file);
+  fread((void *)rawBytes, sizeof(char), lengthBytes, file);
 
-	wchar_t *contents = (wchar_t *) calloc(lengthBytes + 1, sizeof(wchar_t) );
-	if (contents == nullptr)
-	{
-		free(rawBytes);
-		fwprintf(stderr, L"chakrahost: fatal error.\n");
-		return wstring();
-	}
+  wchar_t *contents = (wchar_t *)calloc(lengthBytes + 1, sizeof(wchar_t));
+  if (contents == nullptr)
+  {
+    free(rawBytes);
+    fwprintf(stderr, L"chakrahost: fatal error.\n");
+    return wstring();
+  }
 
-	if (MultiByteToWideChar(CP_UTF8, 0, rawBytes, lengthBytes + 1, contents, lengthBytes + 1) == 0)
-	{
-        free(rawBytes);
-        free(contents);
-		fwprintf(stderr, L"chakrahost: fatal error.\n");
-		return wstring();
-	}
-
-	wstring result = contents;
+  if (MultiByteToWideChar(CP_UTF8, 0, rawBytes, lengthBytes + 1, contents, lengthBytes + 1) == 0)
+  {
     free(rawBytes);
     free(contents);
-	return result;
+    fwprintf(stderr, L"chakrahost: fatal error.\n");
+    return wstring();
+  }
+
+  wstring result = contents;
+  free(rawBytes);
+  free(contents);
+  return result;
 }
 
 //
@@ -96,26 +101,26 @@ wstring LoadScript(wstring fileName)
 
 JsValueRef CALLBACK Echo(JsValueRef callee, bool isConstructCall, JsValueRef *arguments, unsigned short argumentCount, void *callbackState)
 {
-	for (unsigned int index = 1; index < argumentCount; index++)
-	{
-		if (index > 1)
-		{
-			wprintf(L" ");
-		}
+  for (unsigned int index = 1; index < argumentCount; index++)
+  {
+    if (index > 1)
+    {
+      wprintf(L" ");
+    }
 
-		JsValueRef stringValue;
-		IfFailThrow(JsConvertValueToString(arguments[index], &stringValue), L"invalid argument");
+    JsValueRef stringValue;
+    IfFailThrow(JsConvertValueToString(arguments[index], &stringValue), L"invalid argument");
 
-		const wchar_t *string;
-		size_t length;
-		IfFailThrow(JsStringToPointer(stringValue, &string, &length), L"invalid argument");
+    const wchar_t *string;
+    size_t length;
+    IfFailThrow(JsStringToPointer(stringValue, &string, &length), L"invalid argument");
 
-		wprintf(L"%s", string);
-	}
+    wprintf(L"%s", string);
+  }
 
-	wprintf(L"\n");
+  wprintf(L"\n");
 
-	return JS_INVALID_REFERENCE;
+  return JS_INVALID_REFERENCE;
 }
 
 //
@@ -124,40 +129,40 @@ JsValueRef CALLBACK Echo(JsValueRef callee, bool isConstructCall, JsValueRef *ar
 
 JsValueRef CALLBACK RunScript(JsValueRef callee, bool isConstructCall, JsValueRef *arguments, unsigned short argumentCount, void *callbackState)
 {
-	JsValueRef result = JS_INVALID_REFERENCE;
+  JsValueRef result = JS_INVALID_REFERENCE;
 
-	if (argumentCount < 2)
-	{
-		ThrowException(L"not enough arguments");
-		return result;
-	}
+  if (argumentCount < 2)
+  {
+    ThrowException(L"not enough arguments");
+    return result;
+  }
 
-	//
-	// Convert filename.
-	//
-	const wchar_t *filename;
-	size_t length;
+  //
+  // Convert filename.
+  //
+  const wchar_t *filename;
+  size_t length;
 
-	IfFailThrow(JsStringToPointer(arguments[1], &filename, &length), L"invalid filename argument");
+  IfFailThrow(JsStringToPointer(arguments[1], &filename, &length), L"invalid filename argument");
 
-	//
-	// Load the script from the disk.
-	//
+  //
+  // Load the script from the disk.
+  //
 
-	wstring script = LoadScript(filename);
-	if (script.empty())
-	{
-		ThrowException(L"invalid script");
-		return result;
-	}
+  wstring script = LoadScript(filename);
+  if (script.empty())
+  {
+    ThrowException(L"invalid script");
+    return result;
+  }
 
-	//
-	// Run the script.
-	//
+  //
+  // Run the script.
+  //
 
-	IfFailThrow(JsRunScript(script.c_str(), currentSourceContext++, filename, &result), L"failed to run script.");
+  IfFailThrow(JsRunScript(script.c_str(), currentSourceContext++, filename, &result), L"failed to run script.");
 
-	return result;
+  return result;
 }
 
 //
@@ -166,131 +171,113 @@ JsValueRef CALLBACK RunScript(JsValueRef callee, bool isConstructCall, JsValueRe
 
 JsErrorCode DefineHostCallback(JsValueRef globalObject, const wchar_t *callbackName, JsNativeFunction callback, void *callbackState)
 {
-	//
-	// Get property ID.
-	//
+  //
+  // Get property ID.
+  //
 
-	JsPropertyIdRef propertyId;
-	IfFailRet(JsGetPropertyIdFromName(callbackName, &propertyId));
+  JsPropertyIdRef propertyId;
+  IfFailRet(JsGetPropertyIdFromName(callbackName, &propertyId));
 
-	//
-	// Create a function
-	//
+  //
+  // Create a function
+  //
 
-	JsValueRef function;
-	IfFailRet(JsCreateFunction(callback, callbackState, &function));
+  JsValueRef function;
+  IfFailRet(JsCreateFunction(callback, callbackState, &function));
 
-	//
-	// Set the property
-	//
+  //
+  // Set the property
+  //
 
-	IfFailRet(JsSetProperty(globalObject, propertyId, function, true));
+  IfFailRet(JsSetProperty(globalObject, propertyId, function, true));
 
-	return JsNoError;
+  return JsNoError;
 }
 
 //
 // Creates a host execution context and sets up the host object in it.
 //
 
-JsErrorCode CreateHostContext(JsRuntimeHandle runtime, int argc, wchar_t *argv [], int argumentsStart, JsContextRef *context)
+JsErrorCode CreateHostContext(int argc, wchar_t *argv[], int argumentsStart)
 {
-	//
-	// Create the context. 
-	//
+  //
+  // Create the host object the script will use.
+  //
 
-	IfFailRet(JsCreateContext(runtime, context));
+  JsValueRef hostObject;
+  IfFailRet(JsCreateObject(&hostObject));
 
-	//
-	// Now set the execution context as being the current one on this thread.
-	//
+  //
+  // Get the global object
+  //
 
-	IfFailRet(JsSetCurrentContext(*context));
+  JsValueRef globalObject;
+  IfFailRet(JsGetGlobalObject(&globalObject));
 
-	//
-	// Create the host object the script will use.
-	//
+  //
+  // Get the name of the property ("host") that we're going to set on the global object.
+  //
 
-	JsValueRef hostObject;
-	IfFailRet(JsCreateObject(&hostObject));
+  JsPropertyIdRef hostPropertyId;
+  IfFailRet(JsGetPropertyIdFromName(L"host", &hostPropertyId));
 
-	//
-	// Get the global object
-	//
+  //
+  // Set the property.
+  //
 
-	JsValueRef globalObject;
-	IfFailRet(JsGetGlobalObject(&globalObject));
+  IfFailRet(JsSetProperty(globalObject, hostPropertyId, hostObject, true));
 
-	//
-	// Get the name of the property ("host") that we're going to set on the global object.
-	//
+  //
+  // Now create the host callbacks that we're going to expose to the script.
+  //
 
-	JsPropertyIdRef hostPropertyId;
-	IfFailRet(JsGetPropertyIdFromName(L"host", &hostPropertyId));
+  IfFailRet(DefineHostCallback(hostObject, L"echo", Echo, nullptr));
+  IfFailRet(DefineHostCallback(hostObject, L"runScript", RunScript, nullptr));
 
-	//
-	// Set the property.
-	//
+  //
+  // Create an array for arguments.
+  //
 
-	IfFailRet(JsSetProperty(globalObject, hostPropertyId, hostObject, true));
+  JsValueRef arguments;
+  IfFailRet(JsCreateArray(argc - argumentsStart, &arguments));
 
-	//
-	// Now create the host callbacks that we're going to expose to the script.
-	//
+  for (int index = argumentsStart; index < argc; index++)
+  {
+    //
+    // Create the argument value.
+    //
 
-	IfFailRet(DefineHostCallback(hostObject, L"echo", Echo, nullptr));
-    IfFailRet(DefineHostCallback(hostObject, L"runScript", RunScript, nullptr));
+    JsValueRef argument;
+    IfFailRet(JsPointerToString(argv[index], wcslen(argv[index]), &argument));
 
-	//
-	// Create an array for arguments.
-	//
+    //
+    // Create the index.
+    //
 
-	JsValueRef arguments;
-	IfFailRet(JsCreateArray(argc - argumentsStart, &arguments));
+    JsValueRef indexValue;
+    IfFailRet(JsIntToNumber(index - argumentsStart, &indexValue));
 
-	for (int index = argumentsStart; index < argc; index++)
-	{
-		//
-		// Create the argument value.
-		//
+    //
+    // Set the value.
+    //
 
-		JsValueRef argument;
-		IfFailRet(JsPointerToString(argv[index], wcslen(argv[index]), &argument));
+    IfFailRet(JsSetIndexedProperty(arguments, indexValue, argument));
+  }
 
-		//
-		// Create the index.
-		//
+  //
+  // Get the name of the property that we're going to set on the host object.
+  //
 
-		JsValueRef indexValue;
-		IfFailRet(JsIntToNumber(index - argumentsStart, &indexValue));
+  JsPropertyIdRef argumentsPropertyId;
+  IfFailRet(JsGetPropertyIdFromName(L"arguments", &argumentsPropertyId));
 
-		//
-		// Set the value.
-		//
+  //
+  // Set the arguments property.
+  //
 
-		IfFailRet(JsSetIndexedProperty(arguments, indexValue, argument));
-	}
+  IfFailRet(JsSetProperty(hostObject, argumentsPropertyId, arguments, true));
 
-	//
-	// Get the name of the property that we're going to set on the host object.
-	//
-
-	JsPropertyIdRef argumentsPropertyId;
-	IfFailRet(JsGetPropertyIdFromName(L"arguments", &argumentsPropertyId));
-
-	//
-	// Set the arguments property.
-	//
-
-	IfFailRet(JsSetProperty(hostObject, argumentsPropertyId, arguments, true));
-
-	//
-	// Clean up the current execution context.
-	//
-
-	IfFailRet(JsSetCurrentContext(JS_INVALID_REFERENCE));
-
-	return JsNoError;
+  return JsNoError;
 }
 
 //
@@ -299,30 +286,30 @@ JsErrorCode CreateHostContext(JsRuntimeHandle runtime, int argc, wchar_t *argv [
 
 JsErrorCode PrintScriptException()
 {
-	//
-	// Get script exception.
-	//
+  //
+  // Get script exception.
+  //
 
-	JsValueRef exception;
-	IfFailRet(JsGetAndClearException(&exception));
+  JsValueRef exception;
+  IfFailRet(JsGetAndClearException(&exception));
 
-	//
-	// Get message.
-	//
+  //
+  // Get message.
+  //
 
-	JsPropertyIdRef messageName;
-	IfFailRet(JsGetPropertyIdFromName(L"message", &messageName));
+  JsPropertyIdRef messageName;
+  IfFailRet(JsGetPropertyIdFromName(L"message", &messageName));
 
-	JsValueRef messageValue;
-	IfFailRet(JsGetProperty(exception, messageName, &messageValue));
+  JsValueRef messageValue;
+  IfFailRet(JsGetProperty(exception, messageName, &messageValue));
 
-	const wchar_t *message;
-	size_t length;
-	IfFailRet(JsStringToPointer(messageValue, &message, &length));
+  const wchar_t *message;
+  size_t length;
+  IfFailRet(JsStringToPointer(messageValue, &message, &length));
 
-	fwprintf(stderr, L"chakrahost: exception: %s\n", message);
+  fwprintf(stderr, L"chakrahost: exception: %s\n", message);
 
-	return JsNoError;
+  return JsNoError;
 }
 
 //
@@ -331,96 +318,128 @@ JsErrorCode PrintScriptException()
 
 int _cdecl wmain(int argc, wchar_t *argv[])
 {
-	int returnValue = EXIT_FAILURE;
-	CommandLineArguments arguments;
-	
-	arguments.argumentsStart = 1;
+  int returnValue = EXIT_FAILURE;
+  CommandLineArguments arguments;
 
-	if (argc - arguments.argumentsStart < 1)
-	{
-		fwprintf(stderr, L"usage: chakrahost <script name> <arguments>\n");
-		return returnValue;
-	}
+  arguments.argumentsStart = 1;
 
-	try
-	{
-		JsRuntimeHandle runtime;
-		JsContextRef context;
+  if (argc - arguments.argumentsStart < 1)
+  {
+    fwprintf(stderr, L"usage: chakrahost <script name> <arguments>\n");
+    return returnValue;
+  }
 
-		//
-		// Create the runtime. We're only going to use one runtime for this host.
-		//
+  try
+  {
+    node::DebugOptions debug_options;
+    debug_options.ParseOption("nothing", "--inspect-brk=9230");
+    if (debug_options.inspector_enabled()) {
+      v8::Debug::EnableInspector();
+    }
 
-		IfFailError(JsCreateRuntime(JsRuntimeAttributeNone, nullptr, &runtime), L"failed to create runtime.");
+#pragma region Crap
 
-		//
-		// Similarly, create a single execution context. Note that we're putting it on the stack here,
-		// so it will stay alive through the entire run.
-		//
+    v8::Platform* platform = v8::platform::CreateDefaultPlatform(
+      4 /* thread_pool_size */,
+      v8::platform::IdleTaskSupport::kDisabled,
+      v8::platform::InProcessStackDumping::kDisabled);
+    v8::V8::InitializePlatform(platform);
 
-		IfFailError(CreateHostContext(runtime, argc, argv, arguments.argumentsStart, &context), L"failed to create execution context.");
+    v8::Isolate::CreateParams params;
+    uint32_t zero_fill_field_ = 1;
+    v8::Isolate* const isolate = v8::Isolate::New(params);
 
-		//
-		// Now set the execution context as being the current one on this thread.
-		//
+    {
+      v8::Isolate::Scope isolate_scope(isolate);
+      v8::HandleScope scope(isolate);
 
-		IfFailError(JsSetCurrentContext(context), L"failed to set current context.");
+      v8::Local<v8::Context> context = v8::Context::New(isolate);
+      v8::Context::Scope context_scope(context);
 
-		//
-		// Load the script from the disk.
-		//
+      node::IsolateData data(isolate, uv_default_loop(), &zero_fill_field_);
+      node::Environment env(&data, context);
 
-		wstring script = LoadScript(argv[arguments.argumentsStart]);
-		if (script.empty())
-		{
-			goto error;
-		}
 
-		//
-		// Run the script.
-		//
+#pragma endregion
 
-		JsValueRef result;
-		JsErrorCode errorCode = JsRunScript(script.c_str(), currentSourceContext++, argv[arguments.argumentsStart], &result);
-		
-		if (errorCode == JsErrorScriptException)
-		{
-			IfFailError(PrintScriptException(), L"failed to print exception");
-			return EXIT_FAILURE;
-		}
-		else
-		{
-			IfFailError(errorCode, L"failed to run script.");
-		}
+      env.inspector_agent()->Start(platform, nullptr, debug_options);
 
-		//
-		// Convert the return value.
-		//
+      jsrt::IsolateShim* isolateShim = jsrt::IsolateShim::FromIsolate(isolate);
+      jsrt::ContextShim* contextShim = isolateShim->GetCurrentContextShim();
 
-		JsValueRef numberResult;
-		double doubleResult;
-		IfFailError(JsConvertValueToNumber(result, &numberResult), L"failed to convert return value.");
-		IfFailError(JsNumberToDouble(numberResult, &doubleResult), L"failed to convert return value.");
-		returnValue = (int) doubleResult;
-		cout << returnValue << endl;
+      JsRuntimeHandle runtime = isolateShim->GetRuntimeHandle();
+      JsContextRef contextRef = contextShim->GetContextRef();
 
-		//
-		// Clean up the current execution context.
-		//
+      //
+      // Similarly, create a single execution context. Note that we're putting it on the stack here,
+      // so it will stay alive through the entire run.
+      //
 
-		IfFailError(JsSetCurrentContext(JS_INVALID_REFERENCE), L"failed to cleanup current context.");
+      IfFailError(CreateHostContext(argc, argv, arguments.argumentsStart), L"failed to create execution context.");
 
-		//
-		// Clean up the runtime.
-		//
+      //
+      // Now set the execution context as being the current one on this thread.
+      //
 
-		IfFailError(JsDisposeRuntime(runtime), L"failed to cleanup runtime.");
-	}
-	catch (...)
-	{
-		fwprintf(stderr, L"chakrahost: fatal error: internal error.\n");
-	}
+      IfFailError(JsSetCurrentContext(contextRef), L"failed to set current context.");
+
+      //
+      // Load the script from the disk.
+      //
+
+      wstring script = LoadScript(argv[arguments.argumentsStart]);
+      if (script.empty())
+      {
+        goto error;
+      }
+
+      //
+      // Run the script.
+      //
+
+
+
+      env.inspector_agent()->PauseOnNextJavascriptStatement("startup!");
+      JsValueRef result;
+      JsErrorCode errorCode = JsRunScript(script.c_str(), currentSourceContext++, argv[arguments.argumentsStart], &result);
+
+      if (errorCode == JsErrorScriptException)
+      {
+        IfFailError(PrintScriptException(), L"failed to print exception");
+        return EXIT_FAILURE;
+      }
+      else
+      {
+        IfFailError(errorCode, L"failed to run script.");
+      }
+
+      //
+      // Convert the return value.
+      //
+
+      JsValueRef numberResult;
+      double doubleResult;
+      IfFailError(JsConvertValueToNumber(result, &numberResult), L"failed to convert return value.");
+      IfFailError(JsNumberToDouble(numberResult, &doubleResult), L"failed to convert return value.");
+      returnValue = (int)doubleResult;
+      cout << returnValue << endl;
+
+      if (env.inspector_agent()->IsConnected()) {
+        env.inspector_agent()->WaitForDisconnect();
+      }
+
+      //
+      // Clean up the current execution context.
+      //
+
+      IfFailError(JsSetCurrentContext(JS_INVALID_REFERENCE), L"failed to cleanup current context.");
+    }
+  }
+  catch (...)
+  {
+    fwprintf(stderr, L"chakrahost: fatal error: internal error.\n");
+  }
 
 error:
-	return returnValue;
+  return returnValue;
 }
